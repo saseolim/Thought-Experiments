@@ -1,0 +1,93 @@
+\documentclass{book}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage[CJKspace]{xeCJK}  % 한글 지원
+\setmainfont{Times New Roman}
+\setCJKmainfont{Malgun Gothic}
+
+\geometry{
+ a4paper,
+ left=10mm,
+ right=10mm,
+ top=15mm,
+ bottom=15mm
+}
+\setlength{\parindent}{0pt}
+
+\title{FNN v2 \& Hyper-FNN (Matrix Form)}
+\author{사서림}
+\date{2025.08.27.}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter{FNN v2 - Fourier Feature Neural Network (Matrix Form)}
+
+\section{기본 정의}
+입력 $V \in \mathbb{R}^n$, 출력 $W \in \mathbb{R}^m$.
+푸리에 급수 항의 개수를 $S$라 하자.
+
+\[
+\omega := \frac{2\pi}{C \cdot m}, \qquad
+X = \text{Pad}(V; S)
+\]
+
+여기서 $\text{Pad}$는 길이를 $S$로 맞추기 위한 패딩 연산이다.
+
+\section{Fourier Feature 벡터}
+입력 $X \in \mathbb{R}^S$에 대하여 다음의 푸리에 특징 벡터를 정의한다.
+\[
+\Phi(X) =
+\begin{bmatrix}
+\sin(\Omega X + H_s) \\
+\cos(\Omega X + H_c)
+\end{bmatrix}
+\in \mathbb{R}^{2S}
+\]
+여기서 $\Omega, H_s, H_c \in \mathbb{R}^{S \times S}$는 학습 파라미터 행렬이다.
+
+\section{출력 수식}
+FNN v2의 출력은 다음과 같이 정의된다.
+\[
+W = A \, \Phi(X) + b + \lVert V \rVert
+\]
+여기서 $A \in \mathbb{R}^{m \times 2S}$, $b \in \mathbb{R}^m$은 학습 파라미터이다.
+
+\section{헤더 MLP}
+성능 향상을 위해, $W$에 대해 2단계 MLP를 적용한다.
+\[
+M(W) = L_2 \circ \sigma \circ L_1(W),
+\]
+\[
+L_1:\mathbb{R}^m \to \mathbb{R}^{8m}, \quad
+L_2:\mathbb{R}^{8m} \to \mathbb{R}^m, \quad
+\sigma=\text{GELU}.
+\]
+
+---
+
+\section{Hyper-FNN v2 - Hypernetwork-based FNN (Matrix Form)}
+
+\subsection{하이퍼네트워크의 정의}
+하이퍼네트워크 $H$는 입력 $V \in \mathbb{R}^n$을 받아
+FNN v2의 모든 파라미터 행렬을 동적으로 생성한다.
+\[
+H: V \mapsto \{A(V), \Omega(V), H_s(V), H_c(V), b(V)\}.
+\]
+
+\subsection{순전파}
+생성된 파라미터를 이용해 출력은 다음과 같이 정의된다.
+\[
+W(V) = A(V) \, \Phi\!\big(X; \Omega(V), H_s(V), H_c(V)\big) + b(V) + \lVert V \rVert.
+\]
+
+\subsection{의의}
+\begin{itemize}
+\item \textbf{입력 적응성}: 파라미터가 $V$에 의존하므로 데이터 분포 변화에 강함.
+\item \textbf{파라미터 효율성}: 거대한 파라미터를 직접 저장하지 않고, 작은 하이퍼네트워크 $H$만 학습하면 됨.
+\end{itemize}
+
+---
+
+\end{document}

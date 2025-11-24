@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage{xeCJK}
+\setCJKmainfont{Malgun Gothic}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{mathrsfs}
+\usepackage{eucal}
+\usepackage{mathtools}
+\usepackage{unicode-math}
+
+\lstdefinelanguage{CSharp}
+{
+morekeywords={public,static,void,int,float,string,return,class,if,else,new,var,delegate,Func,bool,using,namespace,partial,get,set,private,params},
+sensitive=true,
+morecomment=[l]{//},
+morecomment=[s]{/*}{*/},
+morestring=[b]",
+}
+\lstset{
+  language=CSharp,
+  basicstyle=\ttfamily\small,     % 기본 폰트
+  keywordstyle=\color{blue}\bfseries,     % 키워드 색
+  commentstyle=\color{gray},              % 주석 색
+  stringstyle=\color{red},                % 문자열 색
+  numbers=left,                           % 줄 번호
+  numberstyle=\small\color{gray},
+  stepnumber=1,
+  numbersep=10pt,
+  backgroundcolor=\color{white},          % 배경색
+  frame=single,                           % 테두리
+  tabsize=2,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  showspaces=false,
+  showstringspaces=false
+}
+
+\geometry{
+ a4paper,
+ left=10mm,
+ right=10mm,
+ top=10mm,
+ bottom=20mm
+ }
+
+\title{재귀\,함수에\,관한\,고찰2\,(정지\,조건)}
+\author{사서림}
+\date{2025.04.14.}
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\maketitle
+
+\newpage
+
+[정지\,조건]\\
+재귀\,함수\,$R(f,g,h)(x)$에\,대하여\,아래와\,같이\,정지\,조건을\,정의한다.\\
+
+$g(x,f)=\text{true}$인 $x \in T$ 또는 $f \in T \rightarrow T$(혹은\,둘\,모두)를\,정지\,매개변수\,stop이라고\,하자.\\
+만약\,$f$를\,유한번\,재귀했을\,때\,stop에\,속하는\,$\text{stop}_n$이\,존재한다면\\
+$\exists n \in \mathbb{N},\,g(f^{(n)}(x),f)=\text{true}$\\
+이므로\,$R(f,g,h)(x)$는\,정지한다.\\
+
+-끝-
+\end{document}
