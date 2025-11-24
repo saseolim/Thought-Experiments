@@ -1,0 +1,120 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage[CJKspace]{xeCJK}  % 한글 지원
+\setmainfont{Times New Roman}
+\setCJKmainfont{Malgun Gothic}  % 시스템에 따라 다른 한글 글꼴 사용 가능
+
+\usepackage{tikz}
+\usepackage{pdflscape}
+\usetikzlibrary{trees}
+
+\geometry{
+ a4paper,
+ left=10mm,
+ right=10mm,
+ top=15mm,
+ bottom=15mm
+ }
+ 
+ \setlength{\parindent}{0pt}
+
+\title{블랜더 쉐이딩 아이디어}
+\author{사서림}
+\date{2025.11.23.\text{\_\-\-\_}}
+
+\begin{document}
+\maketitle
+\newpage
+
+%\tableofcontents
+
+\section*{Shading Idea 1: Discrete Tone Mapping with Matrix Distortion}
+
+This model utilizes discrete thresholding for tone mapping and applies a color distortion matrix in specific intensity ranges to achieve a stylized look.
+
+\[
+\begin{aligned}
+\mathbf{L}_c, \mathbf{L}_v &\in \mathbb{R}^3 \quad (\text{Light Direction, Light Color Vector}) \\
+\mathbf{T}(u,v) &: [0,1]^2 \rightarrow \mathbb{R}^3 \quad (\text{Texture Color Map}) \\
+\hat{n} &\in \mathbb{R}^3, \quad \|\hat{n}\|=1 \quad (\text{Surface Normal Vector}) \\
+L &= \max(0, -\mathbf{L}_c \cdot \hat{n}) \quad (\text{Lambertian Intensity})
+\end{aligned}
+\]
+
+The tone mapping function $h_f(L)$ is defined as:
+\[
+h_f(L) = 
+\begin{cases} 
+1 & L > x_1 \\
+L & x_1 \ge L > x_2 \\
+c_1 & x_2 \ge L > x_3 \\
+0 & x_3 \ge L 
+\end{cases}
+\]
+
+The color distortion vector function $\mathbf{v}(\mathbf{L}_v)$ is defined as:
+\[
+\mathbf{v}(\mathbf{L}_v) = 
+\begin{cases} 
+\mathbf{L}_v & L > x_1 \\
+\mathbf{A} \mathbf{L}_v & x_1 \ge L > x_2 \quad (\text{Warm Distortion Matrix}) \\
+\mathbf{L}_v & x_2 \ge L 
+\end{cases}
+\]
+
+The final color is computed using the Hadamard product ($\odot$):
+\[
+\text{Color}_{\text{final}} = h_f(L) \cdot [ \mathbf{T}(u,v) \odot \mathbf{v}(\mathbf{L}_v) ]
+\]
+
+\noindent \textbf{Parameters:} 
+$x_1, x_2, x_3 \in \mathbb{R}$ (Thresholds), $c_1 \in \mathbb{R}$ (Shadow Intensity), $\mathbf{A} \in \mathbb{R}^{3 \times 3}$ (Color Matrix).
+
+\vspace{1cm}
+
+\section*{Shading Idea 2.1: Continuous Gradient Matrix Mapping}
+
+This model introduces continuous gradient matrices $\mathbf{A}(L)$ and $\mathbf{B}(L)$ at the boundaries of tone transitions to ensure smooth chromatic aberration or warm-tone shifts.
+
+\[
+h_f(L) = 
+\begin{cases} 
+1 & L > x_1 \\
+c_1 & x_1 \ge L > x_2 \\
+0 & x_2 \ge L 
+\end{cases}
+\]
+
+\[
+\mathbf{v}(\mathbf{L}_v) = 
+\begin{cases} 
+\mathbf{A}(L) \mathbf{L}_v & \delta_{1,1} \ge L > \delta_{1,2} \quad (\text{Warm/Dark Gradient Region}) \\
+\mathbf{B}(L) \mathbf{L}_v & \delta_{2,1} \ge L > \delta_{2,2} \quad (\text{Warm/Bright Gradient Region}) \\
+\mathbf{L}_v & \text{otherwise}
+\end{cases}
+\]
+
+\noindent \textbf{Continuity Constraints:}
+\[
+\mathbf{A}(L), \mathbf{B}(L) \in C^k([0,1], \mathbb{R}^{3 \times 3}) \quad \text{where } k \ge 1
+\]
+\[
+\mathbf{A}(\delta_{1,1}) = \mathbf{A}(\delta_{1,2}) = \mathbf{B}(\delta_{2,1}) = \mathbf{B}(\delta_{2,2}) = \mathbf{I}_{3 \times 3}
+\]
+
+\noindent \textbf{Parameter Valid Intervals:}
+To ensure proper gradient transition regions between tones, the threshold parameters must satisfy the following inequality chain:
+\[
+1 \ge \delta_{1,1} > \delta_{1,2} > x_1 > \delta_{2,1} > \delta_{2,2} > x_2 > 0
+\]
+\begin{itemize}
+    \item $[\delta_{1,2}, \delta_{1,1}]$: Gradient region before transitioning to the mid-tone ($x_1$).
+    \item $[\delta_{2,2}, \delta_{2,1}]$: Gradient region before transitioning to the shadow tone ($x_2$).
+\end{itemize}
+
+\[
+\text{Color}_{\text{final}} = h_f(L) \cdot [ \mathbf{T}(u,v) \odot \mathbf{v}(\mathbf{L}_v) ]
+\]
+
+\end{document}
